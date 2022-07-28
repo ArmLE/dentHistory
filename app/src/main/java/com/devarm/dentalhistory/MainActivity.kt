@@ -8,6 +8,7 @@ import androidx.biometric.BiometricManager
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
+import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
 import androidx.biometric.BiometricPrompt
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -22,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.devarm.dentalhistory.ui.theme.DentalHistoryTheme
 
@@ -30,12 +32,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             DentalHistoryTheme {
-                // A surface container using the 'background' color from the theme
+
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    //Greeting("Android")
                     Auth()
                 }
             }
@@ -48,10 +49,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var promptInfo:BiometricPrompt.PromptInfo
 
     private fun setupAuth(){
-        if(BiometricManager.from(this).canAuthenticate(BIOMETRIC_STRONG)==BiometricManager.BIOMETRIC_SUCCESS)
+        if(BiometricManager.from(this).canAuthenticate(
+                BIOMETRIC_STRONG or DEVICE_CREDENTIAL) ==BiometricManager.BIOMETRIC_SUCCESS)
             canAuth=true
             promptInfo=BiometricPrompt.PromptInfo.Builder().setTitle("Authenticacion Biometrica").setAllowedAuthenticators(
-                BIOMETRIC_STRONG).build()
+                BIOMETRIC_STRONG or DEVICE_CREDENTIAL).build()
     }
     private fun authenticate(auth:(auth:Boolean)->Unit){
         if(canAuth){
@@ -64,23 +66,23 @@ class MainActivity : AppCompatActivity() {
                 }
             }).authenticate(promptInfo)
         }else{
-            auth
+            auth(true)
         }
     }
 
     @Composable
     fun Auth(){
 
-        var auth by remember {
-            mutableStateOf(false)
-        }
+        var auth by remember { mutableStateOf(false)}
 
         Column(modifier = Modifier
             .background( if(auth)  Color(0xFF93E2E2)  else Color(0xFFFFFFFF) )
             .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center) {
-            Text(text = if(auth) "Estas Auth" else "Necesitas Auth" ,fontWeight = FontWeight.Bold)
+            Text(text = if(auth) "Estas Auth" else "Necesitas Auth" ,
+                fontSize=22.sp,
+                fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(8.dp))
             Button(onClick = {
                     if(auth) {
@@ -93,16 +95,11 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-/*
-fun Greeting(name: String) {
-    Text(text = "Hello $name!")
-}*/
 
     @Preview(showSystemUi = true)
     @Composable
     fun DefaultPreview() {
         DentalHistoryTheme {
-            //Greeting("Android")
             Auth()
         }
     }
